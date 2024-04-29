@@ -12,7 +12,7 @@ options mergenoby=error;
 /**************************Set the export path for the final dataset of counts by community**************************/
 /********************************************************************************************************************/
 
-%let export_path = \\dohfile02\phig\PHIG_documents\Grants\Prescription Drug Overdose - CDC Grant\Special Projects\HEALing\PMP\PMP Measures;
+%let export_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\PMP Measures;
 
 /************************************************************************************************************************/
 /************************************************************************************************************************/
@@ -24,7 +24,7 @@ options mergenoby=error;
 /**************************************************************************************************************/
 
 
-%let import_path = \\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\Files;
+%let import_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files;
 %let bup_file = Merged_NDC_20220825.xlsx;
 %let opioid_file = Merged_NDC_20220825.xlsx;
 %let benzo_file = Merged_NDC_20220825.xlsx;

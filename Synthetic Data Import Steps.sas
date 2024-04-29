@@ -25,7 +25,7 @@ title; footnote; libname _all_; /*filename _all_;*/ /*removed 1-10-23 because it
 proc datasets library=work memtype=data kill; quit; run;
 ods graphics off;
 
-libname tmp "\\isosmb\CCTSEDC\004HEAL3-DataAnalytics\Data Requests\Ohio PDMP Measure Check\Revision_20240418" filelockwait=10; /*LRH added filelockwait 9-16-22 after repeated lock errors with execute statements*/
+libname tmp "C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data" filelockwait=10; /*LRH added filelockwait 9-16-22 after repeated lock errors with execute statements*/
 
 
 options validvarname=v7; /* Added to convert numerical column name to valid form */
@@ -35,7 +35,7 @@ options mergenoby=error;
 /********************************************************************************************************************/
 /**************************Set the export path for the final dataset of counts by community**************************/
 /********************************************************************************************************************/
-%let export_path = \\isosmb\CCTSEDC\004HEAL3-DataAnalytics\Data Requests\Ohio PDMP Measure Check\Revision_20240418\Files;
+%let export_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files;
 
 /************************************************************************************************************************/
 
