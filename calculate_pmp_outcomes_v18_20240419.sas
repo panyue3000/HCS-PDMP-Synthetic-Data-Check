@@ -219,7 +219,7 @@ options nospool mergenoby=error;
 /**************************Set the export path for the final dataset of counts by community**************************/
 /********************************************************************************************************************/
 
-%let export_path = C:\Users\gpatts\Desktop;
+%let export_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Export;
 
 /************************************************************************************************************************/
 /************************************************************************************************************************/
@@ -252,7 +252,7 @@ RUN;
 /**************************Set the import path for the NDC lists and define filenames**************************/
 /**************************************************************************************************************/
 
-%let import_path = \\ad.bu.edu\bumcfiles\SPH\DCC\Dept\HCS\08Data\01Raw_Data\ndc\current_files;
+%let import_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files;
 
 
 
