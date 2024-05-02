@@ -42,7 +42,8 @@ options mergenoby=error;
 /**************************Set the export path for the final dataset of counts by community**************************/
 /********************************************************************************************************************/
 /*Pan, please adjust this to a folder on your computer where you'd like export to rest*/
-%let export_path = \\dohfile02\phig\PHIG_documents\Grants\Prescription Drug Overdose - CDC Grant\Special Projects\HEALing\PMP\PMP Measures;
+/*%let export_path = \\dohfile02\phig\PHIG_documents\Grants\Prescription Drug Overdose - CDC Grant\Special Projects\HEALing\PMP\PMP Measures;*/
+%let export_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\PMP Measures;
 
 /************************************************************************************************************************/
 /************************************************************************************************************************/
@@ -54,7 +55,10 @@ options mergenoby=error;
 /**************************************************************************************************************/
 
 /*Pan, please update import path to wherever you put the merged_NDC_20220825 file*/ 
-%let import_path = \\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\Files;
+/*%let import_path = \\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\Files;*/
+%let import_path = C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files;
+
+
 /*LRH - Pan, if you can, get ahold of this merged_NDC_20220825.xlsx file, so you can 
 use the actual NDC codes used to run this for NYS*/ 
 /* LRH - Pan, Please adjust import path above to match where you put the file*/ 
@@ -65,12 +69,20 @@ use the actual NDC codes used to run this for NYS*/
 *LIBNAME pmplib '\\2UA64226CP\Healing PMP\DATA'; 
 *LIBNAME fmtbasic '\\2UA64226CP\Healing PMP';
 /*Pan, please adjust these libname locations to match wherever you want this stuff stored*/ 
-LIBNAME pmplib '\\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\Data';
-LIBNAME fmtbasic '\\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA';
+/*LIBNAME pmplib '\\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\Data';*/
+/*LIBNAME fmtbasic '\\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA';*/
+
+LIBNAME pmplib 'C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\pmplib';
+LIBNAME fmtbasic 'C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\fmtbasic';
+
 /*Pan, I don't think this libname is being used in current code, could comment out*/ 
-libname test 'C:\Users\vxn09\Desktop\PMP Practice';
+/*libname test 'C:\Users\vxn09\Desktop\PMP Practice';*/
+LIBNAME test 'C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\NYS PDMP codes and dependencies\test';
+
+
 *LIBNAME  pdmplib '\\10.50.79.64\opioid\data';
-%include "\\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\CHIR_Format_new.sas";
+/*%include "\\doh-smb\doh_shared\Projects\BNE\BNE_SCRIPT_DATA\CHIR_Format_new.sas";*/
+%include "C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\NYS PDMP codes and dependencies\CHIR_Format_new.sas";
 *libname x '\\2UA64226CP\Healing PMP\DATA';
 OPTIONS FMTSEARCH=(FMTBASIC.FORMATS) obs=max symbolgen mprint;
 proc format library=fmtbasic cntlout=outfmt;
