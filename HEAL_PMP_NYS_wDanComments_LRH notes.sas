@@ -219,7 +219,7 @@ data zip0;
 set pmplib.zip;
 keep fips county cos zipcode;
 run;
-PROC IMPORT OUT= WORK.HCS_zips1   DATAFILE= "T:\PHIG_documents\Grants\Prescription Drug Overdose - CDC Grant\Special Projects\HEALing\PMP\Zipcodes for 3 communities.xlsx" 
+PROC IMPORT OUT= WORK.HCS_zips1   DATAFILE= "C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\Zipcodes for 3 communities.xlsx" 
             DBMS=EXCEL REPLACE;
      RANGE="HCS_communities$"; 
      GETNAMES=YES;
@@ -539,17 +539,106 @@ pmp_hcs_ids from the imported all_records_Step_d synthetic data file*/
 /*set pmp_all;*/
 /*patient_id = put(patientid,9.);*/
 /*run;*/
+
+/*Pan insert of synthetic Data code*/
+/************************************************************/
+/************************************************************/
+/************************************************************/
+/*Run original measure code on imported synthetic data, all PDMP code prior to this cut for test*/
+/************************************************************/
+/************************************************************/
+/************************************************************/
+/*NY and MA - please note that this file should be inserted into your normal workflow in lieu of the 
+various PDMP import steps leading up to the creation of all_records_step_d*/ 
+/*NY and MA - please also note that ky was using the tmp. library and this may differ from your
+workflow, adjust as needed*/ 
+libname tmp "C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files";
+proc import datafile="C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\HCS Synthetic Data Export.csv"
+	out= tmp.all_records_step_d
+	dbms= csv
+	replace;
+	getnames=yes;
+	run;
+
+
+
+/*After import, rename to the expected file for subsequent measure
+	code, here all_records_step_d, and convert county and reporterid
+	to useful values for matching to lookup tables*/ 
+
+/*NY and MA - please consult the file structure of your usual all_records_step_d and 
+	and just naming below as needed. Test consistency with next steps carefully 
+	in case a format is not as expected.*/
+data tmp.all_records_step_d; 
+set tmp.all_records_step_d;
+ndc11_char = put (NDC, z11.);
+sex = PROPCASE(PatientSex);
+patient_id = patientid;
+date_filled = datefilled;
+days_dispensed = DaysSupply;
+dob_inc_missing = PatientDOB;
+dea_prescriber = PrescriberDEA;
+dea_pharmacy = PharmacyDEA;
+date_run_out = date_filled + days_dispensed -1;
+writtendate = DateWritten;
+HCS = 1;
+prescriber_degree = "MD/DO";
+metric_quantity = Quantity;
+quantity_dispensed = Quantity;
+/*NY and MA - Please change the next two lines for your state if you will need to assign 
+		a real county ID to A and B. I chose the first two counties in KY, 
+		just to get all my later joins to work as expected. */
+if PatientCounty="A" then do; county="Bourbon"; ReporterID="0101"; end;
+else do; county="Boyd"; ReporterID="0102"; end;
+format dob_inc_missing date_filled writtendate date_run_out date9.;
+year_filled = year(date_filled) ;
+quarter_filled = qtr(date_filled) ;
+month_filled = month(date_filled) ;
+year_written = year(writtendate) ;
+quarter_written = qtr(writtendate) ;
+month_written = month(writtendate) ;
+*rename  reporterid2=reporterid ndc11_char2=ndc11_char;
+run;
+
+/*NY and MA - please note that I recreated this step here, using all_records_step_d rather than pmp_all,
+as having this table became necessary later in testing and we had not initally generated it. 
+I think it's ok to leave as is, but please cross reference against your normal approach to creating the pmp_hcs_ids.*/
+
+proc sql;
+create table tmp.pmp_hcs_ids as
+select unique patient_id label = 'Patient ID'
+from tmp.all_records_step_d /*changing to all_records_step_d instead of pmp_all for synthetic testing only, 4-16-24, LRH*/
+where hcs=1;
+quit;
+
+
+
+/*Pan insert end*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*lrh - please start commenting out here for synthetic data*/ 
-proc sort data=pmp_all; by patient_id; run;
+proc sort data=tmp.all_records_step_d;  by patient_id; run;
 proc sort data=pmp_hcs_ids; by patient_id; run;
 /*lrh - please stop commenting out here for synthetic data*/ 
 
 /*Pan, please place your import step for all_records_step_d just after / replacing this exact step*/ 
 /*lrh - please start commenting out here for synthetic data*/ 
-data all_records_step_d;
+data tmp.all_records_step_d;
 length patient_id $100;
-merge pmp_hcs_ids (in=a) pmp_all (in=b); by patient_id;
-if a and b;
+/*merge pmp_hcs_ids (in=a) pmp_all (in=b); by patient_id;*/
+/*if a and b;*/
 
 *patient_id = uid;
 date_filled = filldate; /*pan, please look at the variable naming here and adjust the synthetic data file structure to match*/ 

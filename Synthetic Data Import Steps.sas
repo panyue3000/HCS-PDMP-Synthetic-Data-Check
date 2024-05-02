@@ -191,7 +191,7 @@ quit;
 /************************************************************/
 /************************************************************/
 /************************************************************/
-proc import datafile="&export_path.\Synth Data2000WaiverPrescribers.csv"
+proc import datafile="C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 1 1 Wave 2\Synthetic Data\Files\Synth Data2000WaiverPrescribers.csv"
 	out= DEA_all
 	dbms= csv
 	replace;
