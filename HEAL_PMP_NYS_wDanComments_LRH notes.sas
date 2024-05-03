@@ -507,27 +507,27 @@ run;
 all_records_step_d after you import that file. Be sure that the file you import refers to variables in a way that 
 matches what you set up here with pmp_all through pmp_hcs_ids (everything created in these two sets of data and proc_sql code*/ 
 /*lrh - start commenting out for synthetic data here*/
-data pmp_all;
-set  pmplib.healingpmp2022 pmplib.healingpmp2023  ;
-length patient_id $100. ;
-patient_id=put(patientid,12.);
-if patient_subset=1;
-if vet=0;
-where filldate ge &start_date and filldate le &end_date;
-run;
-proc sql;
-create table pmp_hcs_temp as
-select unique a.patient_id label = 'Patient ID' ,
-			  a.filldate as date_filled format date9. label = 'Date filled',
-			  b.community
-from pmp_all a, zips b
-where a.patzip = b.zip_char ;
-quit;
-proc sql;
-create table pmp_hcs_ids as
-select unique patient_id 
-from pmp_hcs_temp;
-quit;
+/*data pmp_all;*/
+/*set  pmplib.healingpmp2022 pmplib.healingpmp2023  ;*/
+/*length patient_id $100. ;*/
+/*patient_id=put(patientid,12.);*/
+/*if patient_subset=1;*/
+/*if vet=0;*/
+/*where filldate ge &start_date and filldate le &end_date;*/
+/*run;*/
+/*proc sql;*/
+/*create table pmp_hcs_temp as*/
+/*select unique a.patient_id label = 'Patient ID' ,*/
+/*			  a.filldate as date_filled format date9. label = 'Date filled',*/
+/*			  b.community*/
+/*from pmp_all a, zips b*/
+/*where a.patzip = b.zip_char ;*/
+/*quit;*/
+/*proc sql;*/
+/*create table pmp_hcs_ids as*/
+/*select unique patient_id */
+/*from pmp_hcs_temp;*/
+/*quit;*/
 /*lrh - please stop commenting out for synthetic data stuff here, all_records_Step d will be imported and used to create
 pmp_hcs_ids from the imported all_records_Step_d synthetic data file*/ 
 
@@ -600,9 +600,9 @@ month_written = month(writtendate) ;
 *rename  reporterid2=reporterid ndc11_char2=ndc11_char;
 run;
 
-/*NY and MA - please note that I recreated this step here, using all_records_step_d rather than pmp_all,
-as having this table became necessary later in testing and we had not initally generated it. 
-I think it's ok to leave as is, but please cross reference against your normal approach to creating the pmp_hcs_ids.*/
+/*NY and MA - please note that I recreated this step here, using all_records_step_d rather than pmp_all,*/
+/*as having this table became necessary later in testing and we had not initally generated it. */
+/*I think it's ok to leave as is, but please cross reference against your normal approach to creating the pmp_hcs_ids.*/
 
 proc sql;
 create table tmp.pmp_hcs_ids as
@@ -635,30 +635,31 @@ proc sort data=pmp_hcs_ids; by patient_id; run;
 
 /*Pan, please place your import step for all_records_step_d just after / replacing this exact step*/ 
 /*lrh - please start commenting out here for synthetic data*/ 
-data tmp.all_records_step_d;
+data all_records_step_d;
+set tmp.all_records_step_d;
 length patient_id $100;
 /*merge pmp_hcs_ids (in=a) pmp_all (in=b); by patient_id;*/
 /*if a and b;*/
 
-*patient_id = uid;
-date_filled = filldate; /*pan, please look at the variable naming here and adjust the synthetic data file structure to match*/ 
-year_filled = year(filldate);
-quarter_filled = qtr(filldate);
-month_filled = month(filldate);
+patient_id = patientid;
+date_filled = datefilled; /*pan, please look at the variable naming here and adjust the synthetic data file structure to match*/ 
+year_filled = year(datefille);
+quarter_filled = qtr(datefilled);
+month_filled = month(datefilled);
 /*new 20200625*/ /*?*/
-date_written = DATE_RX_WRITTEN; 
-year_written = year(DATE_RX_WRITTEN);
-month_written = month(DATE_RX_WRITTEN);
+date_written = DateWritten;
+year_written = year(DateWritten);
+month_written = month(DateWritten);
 /**************/
 zip_char = patzip;
-dob_inc_missing = PATIENT_BIRTH_DATE;
-ndc11_char = ndcnum;
-dea_prescriber = deano;
-dea_pharmacy = pharmacy; 
-quantity_dispensed = QUANTITY_DISPENSED;
-days_dispensed =dayssupply;
-date_run_out = (date_filled + (days_dispensed - 1));
-gender=gender;
+dob_inc_missing = PatientDOB;
+ndc11_char = put (NDC, z11.);
+dea_prescriber = PrescriberDEA;
+dea_pharmacy = PharmacyDEA; 
+quantity_dispensed = Quantity;
+days_dispensed =DaysSupply;
+date_run_out = date_filled + days_dispensed -1;
+gender=PROPCASE(PatientSex);
 
 label patient_id = 'Patient ID';
 label date_filled = 'Date filled';
