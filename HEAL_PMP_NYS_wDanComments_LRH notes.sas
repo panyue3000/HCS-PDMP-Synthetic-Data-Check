@@ -187,7 +187,7 @@ The end date should not exceed the date of the available complete PMP data.
 /*********************************************************************************************/
 /*Pan, please change the start_date and end_date in your code to match
 the synthetic data values by adjusting things here (whenever you find the right code set)*/
-%let start_date = mdy(07,01,2022);
+%let start_date = mdy(07,01,2018);
 %let end_date = mdy(12,31,2023);
 /********************************************************************************************************************************************/
 /*Create a dataset that has every date in the date range. This will be used below for a "call execute" to query each possible day separately*/
@@ -569,47 +569,40 @@ proc import datafile="C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 
 /*NY and MA - please consult the file structure of your usual all_records_step_d and 
 	and just naming below as needed. Test consistency with next steps carefully 
 	in case a format is not as expected.*/
-data tmp.all_records_step_d; 
-set tmp.all_records_step_d;
-ndc11_char = put (NDC, z11.);
-sex = PROPCASE(PatientSex);
-patient_id = patientid;
-date_filled = datefilled;
-days_dispensed = DaysSupply;
-dob_inc_missing = PatientDOB;
-dea_prescriber = PrescriberDEA;
-dea_pharmacy = PharmacyDEA;
-date_run_out = date_filled + days_dispensed -1;
-writtendate = DateWritten;
-HCS = 1;
-prescriber_degree = "MD/DO";
-metric_quantity = Quantity;
-quantity_dispensed = Quantity;
-/*NY and MA - Please change the next two lines for your state if you will need to assign 
-		a real county ID to A and B. I chose the first two counties in KY, 
-		just to get all my later joins to work as expected. */
-if PatientCounty="A" then do; county="Bourbon"; ReporterID="0101"; end;
-else do; county="Boyd"; ReporterID="0102"; end;
-format dob_inc_missing date_filled writtendate date_run_out date9.;
-year_filled = year(date_filled) ;
-quarter_filled = qtr(date_filled) ;
-month_filled = month(date_filled) ;
-year_written = year(writtendate) ;
-quarter_written = qtr(writtendate) ;
-month_written = month(writtendate) ;
-*rename  reporterid2=reporterid ndc11_char2=ndc11_char;
-run;
+/*data all_records_step_d; */
+/*set tmp.all_records_step_d;*/
+/*ndc11_char = put (NDC, z11.);*/
+/*gender=PROPCASE(PatientSex);*/
+/*patient_id = patientid;*/
+/*date_filled = datefilled;*/
+/*days_dispensed = DaysSupply;*/
+/*dob_inc_missing = PatientDOB;*/
+/*dea_prescriber = PrescriberDEA;*/
+/*dea_pharmacy = PharmacyDEA;*/
+/*date_run_out = date_filled + days_dispensed -1;*/
+/*writtendate = DateWritten;*/
+/*HCS = 1;*/
+/*prescriber_degree = "MD/DO";*/
+/*metric_quantity = Quantity;*/
+/*quantity_dispensed = Quantity;*/
+/*/*NY and MA - Please change the next two lines for your state if you will need to assign */
+/*		a real county ID to A and B. I chose the first two counties in KY, */
+/*		just to get all my later joins to work as expected. */*/
+/**/
+/*if PatientCounty = 'A' then do; County  = 'Broome'; reporterid = '333'; zip = '13737'; end;*/
+/*if PatientCounty = 'B' then do; County  = 'Cayuga'; reporterid = '334'; zip = '13021'; end;*/
+/**/
+/*format dob_inc_missing date_filled writtendate date_run_out date9.;*/
+/*year_filled = year(date_filled) ;*/
+/*quarter_filled = qtr(date_filled) ;*/
+/*month_filled = month(date_filled) ;*/
+/*year_written = year(writtendate) ;*/
+/*quarter_written = qtr(writtendate) ;*/
+/*month_written = month(writtendate) ;*/
+/**rename  reporterid2=reporterid ndc11_char2=ndc11_char;*/
+/*run;*/
+;
 
-/*NY and MA - please note that I recreated this step here, using all_records_step_d rather than pmp_all,*/
-/*as having this table became necessary later in testing and we had not initally generated it. */
-/*I think it's ok to leave as is, but please cross reference against your normal approach to creating the pmp_hcs_ids.*/
-
-proc sql;
-create table tmp.pmp_hcs_ids as
-select unique patient_id label = 'Patient ID'
-from tmp.all_records_step_d /*changing to all_records_step_d instead of pmp_all for synthetic testing only, 4-16-24, LRH*/
-where hcs=1;
-quit;
 
 
 
@@ -628,10 +621,6 @@ quit;
 
 
 
-/*lrh - please start commenting out here for synthetic data*/ 
-proc sort data=tmp.all_records_step_d;  by patient_id; run;
-proc sort data=pmp_hcs_ids; by patient_id; run;
-/*lrh - please stop commenting out here for synthetic data*/ 
 
 /*Pan, please place your import step for all_records_step_d just after / replacing this exact step*/ 
 /*lrh - please start commenting out here for synthetic data*/ 
@@ -641,9 +630,13 @@ length patient_id $100;
 /*merge pmp_hcs_ids (in=a) pmp_all (in=b); by patient_id;*/
 /*if a and b;*/
 
+if PatientCounty = 'A' then do; County  = 'Broome'; reporterid = '333'; zip_char = '13737'; end;
+if PatientCounty = 'B' then do; County  = 'Cayuga'; reporterid = '334'; zip_char = '13021'; end;
+
+
 patient_id = patientid;
 date_filled = datefilled; /*pan, please look at the variable naming here and adjust the synthetic data file structure to match*/ 
-year_filled = year(datefille);
+year_filled = year(datefilled);
 quarter_filled = qtr(datefilled);
 month_filled = month(datefilled);
 /*new 20200625*/ /*?*/
@@ -651,7 +644,7 @@ date_written = DateWritten;
 year_written = year(DateWritten);
 month_written = month(DateWritten);
 /**************/
-zip_char = patzip;
+zip_char = zip_char;
 dob_inc_missing = PatientDOB;
 ndc11_char = put (NDC, z11.);
 dea_prescriber = PrescriberDEA;
@@ -708,10 +701,27 @@ date_run_out
 gender;
 
 run;
+
+/*NY and MA - please note that I recreated this step here, using all_records_step_d rather than pmp_all,*/
+/*as having this table became necessary later in testing and we had not initally generated it. */
+/*I think it's ok to leave as is, but please cross reference against your normal approach to creating the pmp_hcs_ids.*/
+
+proc sql;
+create table pmp_hcs_ids as
+select unique patient_id label = 'Patient ID'
+from all_records_step_d /*changing to all_records_step_d instead of pmp_all for synthetic testing only, 4-16-24, LRH*/
+/*where hcs=1*/
+;
+quit;
 /*lrh - please stop commenting out here for synthetic data*/ 
 
 /*lrh - please insert synthetic data import for all_records_step_d here, as well as the creation of pmp_hcs_ids*/
 /*Pan, please note that the use of the tmp. library name may need to be removed throughout the example code I sent you*/ 
+
+/*lrh - please start commenting out here for synthetic data*/ 
+proc sort data=all_records_step_d;  by patient_id; run;
+proc sort data=pmp_hcs_ids; by patient_id; run;
+/*lrh - please stop commenting out here for synthetic data*/ 
 
 /********************************************************************************************************************************************/
 /*Step E. Select unique combinations of patient ID and date of birth from the table created in step D where date of birth */
@@ -821,10 +831,13 @@ run;
 /*  DAN This step may need to be commmented out--not sure we will have Zips in thier file
 */
 
+
 data step_g_temp2;
 set step_g_temp1;
-if zip_char in ('','99999') then delete; /*delete observations with missing zips, just for this step where we're selecting residences*/
+if zip_char in ('','99999') then delete; 
+/*delete observations with missing zips, just for this step where we're selecting residences*/
 run;
+
 
 proc sort data=step_g_temp2; 
 by 	patient_id 
@@ -3048,7 +3061,7 @@ if community in ("Broome" "Cayuga" "Chautauqua" "Columbia" "Cortland"
 "Genesee" "Greene" "Lewis"  "Orange" "Putnam"  "Sullivan" "Ulster" "Yates" 
 "New York State" 'Suffolk' 'Erie' 'Monroe' 'Rochester' 'Brookhaven Township' 'Buffalo' );
 
-if year eq 2023;
+/*if year eq 2023;*/
 
 
 /**code to test;*/
@@ -3144,14 +3157,14 @@ run;
 /*****************************Set the &export_path macro variable at the top of the program ******************************/
 /*************************************************************************************************************************/
 
-proc export data=outcome_2_5_1_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_5_1; run;
-proc export data=outcome_2_7_1_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_7_1; run;
-proc export data=outcome_2_13_a_counts_revised outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13A; run;
-proc export data=outcome_2_13_b_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13B; run;
-proc export data=outcome_2_13_c_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13C; run;
-proc export data=outcome_2_13_d_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13D; run;
-proc export data=outcome_2_13_all_counts_revised outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; sheet=hcs_2_13_combined; run;
-proc export data=outcome_2_18_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; sheet=hcs_2_18; run;
-proc export data=outcome_3_1_counts outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_3_1; run;
+proc export data=outcome_2_5_1_counts(where=(community in ("Broome", "Cayuga") and Stratification="")) outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_5_1; run;
+proc export data=outcome_2_7_1_counts(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_7_1; run;
+proc export data=outcome_2_13_a_counts_revised (where=(community in ("Broome", "Cayuga") and Stratification="")) outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13A; run;
+proc export data=outcome_2_13_b_counts(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13B; run;
+proc export data=outcome_2_13_c_counts(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13C; run;
+proc export data=outcome_2_13_d_counts(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_2_13D; run;
+proc export data=outcome_2_13_all_counts_revised(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; sheet=hcs_2_13_combined; run;
+proc export data=outcome_2_18_counts(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; sheet=hcs_2_18; run;
+proc export data=outcome_3_1_counts(where=(community in ("Broome", "Cayuga") and Stratification=""))  outfile="&export_path.\hcs_pmp_measures_&rundate..xlsx" dbms=xlsx replace; 	sheet=hcs_3_1; run;
 /*proc export data=final outfile="&export_path.\hcs_pmp_measure3_3_&rundate..xlsx" dbms=xlsx replace; sheet=hcs_3_3; run;
 
