@@ -211,6 +211,20 @@ data first_and_last; set for_first_and_last; by year month date;
 if not first.month and not last.month then delete;
 drop month year;
 run;
+
+proc sql; /*new 20240419*/
+create table month_start_end as
+select distinct
+month(date) as month,
+year(date) as year,
+min(date) as start format date9.,
+max(date) as end format date9.
+from first_and_last
+group by month(date), year(date)
+order by year, month;
+quit;
+
+
 /*********************************************************************************************/
 /*Step B: Create a table of HCS communities. Include any information you will need in order to */
 /*join this table with the PMP data (ZIP codes, city/town names, county names, etc.).*/
@@ -589,8 +603,6 @@ proc import datafile="C:\Users\panyue\Box\1 Healing Communities\Data Issues\1 1 
 /*		a real county ID to A and B. I chose the first two counties in KY, */
 /*		just to get all my later joins to work as expected. */*/
 /**/
-/*if PatientCounty = 'A' then do; County  = 'Broome'; reporterid = '333'; zip = '13737'; end;*/
-/*if PatientCounty = 'B' then do; County  = 'Cayuga'; reporterid = '334'; zip = '13021'; end;*/
 /**/
 /*format dob_inc_missing date_filled writtendate date_run_out date9.;*/
 /*year_filled = year(date_filled) ;*/
@@ -1196,6 +1208,7 @@ select unique 	patient_id,
 				min(patient_obs_excl_overlap) as min_patient_obs_excl_overlap,
 				min(date_filled) as min_date_filled format date9.,
 				max(date_run_out) as max_date_run_out format date9.,
+	            min(age_at_fill) as min_age_at_fill, /*new 20240419*/
 				(max(date_run_out) - min(date_filled) + 1) as duration
 from &dset._step10
 group by patient_id, contin_period;
@@ -2441,6 +2454,8 @@ run;
 %state_gender(2_5_1, outcome_2_5_1_step05);
 %community_gender(2_5_1, outcome_2_5_1_step05);
 %community_age(2_5_1, outcome_2_5_1_step05);
+
+
 /*******************************************************************************************/
 /************************************** Outcome 2.7.1 **************************************/
 /******NUMBER OF INDIVIDUALS RECEIVING BUPRENORPHINE/NALOXONE RETAINED BEYOND 6 MONTHS******/
@@ -2448,7 +2463,7 @@ run;
 /*******************************************************************************************/
 data outcome_2_7_1_step01;
 set hcs_bup_17_step12;
-threshold_date = min_date_filled + 180;
+threshold_date = min_date_filled + 179; /*new 20240419*/
 format threshold_date date9.;
 where duration ge 180;
 run;
@@ -2456,7 +2471,7 @@ run;
 /*CREATING A NULL ROW*/
 proc sql;
 create table outcome_2_7_1_step02 as
-select unique 	"xxxxxxxxx" as patient_id length=100, 
+select unique 	"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" as patient_id length=100, 
 				0 as year,
 				0 as quarter,
 				0 as month
@@ -2465,28 +2480,51 @@ quit;
 
 
 
-%macro retained_6mo(date);
+/*%macro retained_6mo(date);*/
+/**/
+/*proc sql noprint;*/
+/*insert into outcome_2_7_1_step02*/
+/*select unique 	patient_id,*/
+/*				year(&date) as year,*/
+/*				qtr(&date) as quarter,*/
+/*				month(&date) as month*/
+/*from outcome_2_7_1_step01*/
+/*where threshold_date le &date le max_date_run_out*/
+/*;*/
+/*quit;*/
+/**/
+/*%mend retained_6mo;*/
+
+%macro retained_6mo2(start, end); /*new 20240419*/
 
 proc sql noprint;
 insert into outcome_2_7_1_step02
 select unique 	patient_id,
-				year(&date) as year,
-				qtr(&date) as quarter,
-				month(&date) as month
+				year(&start) as year,
+				qtr(&start) as quarter,
+				month(&start) as month
 from outcome_2_7_1_step01
-where threshold_date le &date le max_date_run_out
-;
+where max_date_run_out ge &start 
+	and threshold_date le &end;
 quit;
 
-%mend retained_6mo;
+%mend retained_6mo2;
 
 /*NEW 20200501 to suppress notes in the log*/
 options nomprint nosymbolgen nonotes nosource;
 /*******************************************/
+/*data _null_; */
+/*set first_and_last;*/
+/*call execute('%retained_6mo('||date||')');*/
+/*run;*/
+
 data _null_; 
-set first_and_last;
-call execute('%retained_6mo('||date||')');
+set month_start_end;
+call execute('%retained_6mo2('||start||','||end||')');/*new 20240419*/
 run;
+
+
+
 options mprint symbolgen notes source;
 proc sql;
 create table outcome_2_7_1_step03 as
@@ -2596,12 +2634,14 @@ run;
 /**************************************************************************************/
 /**************************************************************************************/
 data outcome_2_18_denom_step01; 
-set hcs_opioid_18_step12;
+set hcs_opioid_17_step12; /*new 20240419*/ 
 year = year(min_date_filled);
 quarter = qtr(min_date_filled);
 month = month(min_date_filled);
-where gap_prior ge 45;
+where gap_prior ge 45 and
+		min_age_at_fill ge 18;/*new 20240419*/ 
 run;
+
 proc sql;
 create table outcome_2_18_denom_step02 as
 select unique 	patient_id, 
@@ -2637,6 +2677,44 @@ from outcome_2_18_denom_step02 a, step_l b
 where 	a.patient_id = b.patient_id and
 		a.year = b.year;
 quit;
+
+
+
+/*******************************************************/
+/***************** add evaluation year *****************/
+/*******************************************************/
+
+
+data outcome_2_18_denom_step05_eval;
+set outcome_2_18_denom_step02; /*new 20240419*/
+where 	(year = 2021 and month in (7,8,9,10,11,12)) or
+		(year = 2022 and month in (1,2,3,4,5,6));
+year = 20212022;
+drop quarter month;
+run;
+
+
+data outcome_2_18_denom_step05_all;
+set outcome_2_18_denom_step02 /*new 20240419*/
+	outcome_2_18_denom_step05_eval;
+run;
+
+
+proc sql;/*new 20240419*/
+create table outcome_2_18_denom_step05 as
+select unique a.*, b.community
+from outcome_2_18_denom_step05_all a, step_l b
+where 	a.patient_id = b.patient_id and
+		a.year = b.year;
+quit;
+
+
+
+/*******************************************************/
+/*******************************************************/
+/*******************************************************/
+
+
 /*************************************************************************************************/
 /*************************************************************************************************/
 /*************************************************************************************************/
@@ -2707,7 +2785,7 @@ select unique 	a.patient_id,
 				a.quarter_filled as quarter,
 				a.month_filled as month,
 				a.days_dispensed 
-from hcs_opioid_18 a, outcome_2_18_numer_step01 b
+from hcs_opioid_17 a, outcome_2_18_numer_step01 b /*new 20240419*/
 where 	a.patient_id = b.patient_id and
 		a.date_filled = b.min_date_filled and
 		a.days_dispensed > 7;
@@ -3061,7 +3139,9 @@ if community in ("Broome" "Cayuga" "Chautauqua" "Columbia" "Cortland"
 "Genesee" "Greene" "Lewis"  "Orange" "Putnam"  "Sullivan" "Ulster" "Yates" 
 "New York State" 'Suffolk' 'Erie' 'Monroe' 'Rochester' 'Brookhaven Township' 'Buffalo' );
 
+/*pan commented this out - start */
 /*if year eq 2023;*/
+/*pan commented this out - end */
 
 
 /**code to test;*/
