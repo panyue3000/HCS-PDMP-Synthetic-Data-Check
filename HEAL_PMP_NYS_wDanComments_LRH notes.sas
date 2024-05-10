@@ -2757,11 +2757,12 @@ run;
 %community_age(2_18_denom, outcome_2_18_denom_step06);
 
 data outcome_2_18_numer_step01; 
-set hcs_opioid_18_step12;
+set hcs_opioid_17_step12;/*new 20240419*/ 
 year = year(min_date_filled);
 quarter = qtr(min_date_filled);
 month = month(min_date_filled);
-where gap_prior ge 45;
+where gap_prior ge 45 and
+		min_age_at_fill ge 18;/*new 20240419*/ 
 run;
 
 proc sql;
