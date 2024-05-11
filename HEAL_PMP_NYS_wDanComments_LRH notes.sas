@@ -2670,13 +2670,13 @@ where 	a.patient_id = b.patient_id and
 		a.quarter = b.quarter;
 quit;
 
-proc sql;
-create table outcome_2_18_denom_step05 as
-select unique a.*, b.community
-from outcome_2_18_denom_step02 a, step_l b
-where 	a.patient_id = b.patient_id and
-		a.year = b.year;
-quit;
+/*proc sql;*/
+/*create table outcome_2_18_denom_step05 as*/
+/*select unique a.*, b.community*/
+/*from outcome_2_18_denom_step02 a, step_l b*/
+/*where 	a.patient_id = b.patient_id and*/
+/*		a.year = b.year;*/
+/*quit;*/
 
 
 
@@ -2749,7 +2749,7 @@ else if age_at_lastfill ge 55 then age_cat=3;
 run;
 %count_months(2_18_denom, outcome_2_18_denom_step03);
 %count_qtrs(2_18_denom, outcome_2_18_denom_step04);
-%count_years(2_18_denom, outcome_2_18_denom_step06);
+%count_years(2_18_denom, outcome_2_18_denom_step05); /*Pan Edit new 20240419*/
 %count_state(2_18_denom, outcome_2_18_denom_step06);
 %state_age(2_18_denom, outcome_2_18_denom_step06);
 %state_gender(2_18_denom, outcome_2_18_denom_step06);
@@ -2864,7 +2864,7 @@ else if age_at_lastfill ge 55 then age_cat=3;
 run;
 %count_months(2_18_numer, outcome_2_18_numer_step06);
 %count_qtrs(2_18_numer, outcome_2_18_numer_step07);
-%count_years(2_18_numer, outcome_2_18_numer_step09);
+%count_years(2_18_numer, outcome_2_18_numer_step08); /*Pan Edit new 20240419*/
 %count_state(2_18_numer, outcome_2_18_numer_step09);
 %state_age(2_18_numer, outcome_2_18_numer_step09);
 %state_gender(2_18_numer, outcome_2_18_numer_step09);
